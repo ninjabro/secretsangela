@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema ({
   password: String
 });
 
-// important to put mongoose userschema plugin
+// important to put mongoose userschema plugin above the model
 const secret='ourlittlesecret.';
 userSchema.plugin(encrypt, { secret: secret,encryptedFields: ['password']});
 
