@@ -5,7 +5,14 @@ const bodyParser = require("body-parser");
 const ejs = require("ejs");
 // const { default: mongoose } = require("mongoose");
 const mongoose = require ("mongoose");
-const encrypt = require("mongoose-encryption");
+// const encrypt = require("mongoose-encryption");
+
+// bcrypt used for salting and hasing
+// const bcrypt = require("bcrypt");
+// const saltRounds = 10;
+
+// using md5 for hasing 
+// const md5 = require("md5");
 
 
 
@@ -30,8 +37,9 @@ const userSchema = new mongoose.Schema ({
 });
 
 // important to put mongoose userschema plugin above the model
-const secret =(process.env.SECRET);
-userSchema.plugin(encrypt, { secret: secret,encryptedFields: ['password']});
+// using hashing md5 so its commmented
+// const secret =(process.env.SECRET);
+// userSchema.plugin(encrypt, { secret: secret,encryptedFields: ['password']});
 
 
 const User = new mongoose.model("User", userSchema);
@@ -49,10 +57,14 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-   const newUser = new User({
-    email: req.body.username,
-    password: req.body.password
-   });
+
+  bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
+    const newUser = new User({
+      email: req.body.username,
+      password: hash
+     });
+
+   
    newUser.save((err)=>{
        if (err){
         console.log(err);
@@ -61,8 +73,10 @@ app.post("/register", (req, res) => {
        }
    });
 });
+});
 
 app.post("/login", (req, res)=>{
+
   const username = req.body.username;
   const password = req.body.password;
 
@@ -71,9 +85,9 @@ app.post("/login", (req, res)=>{
       console.log(err);
     } else {
       if (foundUser){
-       if (foundUser.password === password) {
-        res.render('secrets');
-      }
+        bcrypt.compare(password, foundUser.password, function(err, result) {
+         if (result === true){res.render('secrets');}
+      }); 
       }
     }
   });
